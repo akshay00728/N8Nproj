@@ -1,0 +1,110 @@
+{
+  "name": "Summarize News and Trigger WF2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "send-newsletter",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "Webhook_Start",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Clean RSS items and format for GPT summarization\nconst items = $json[\"items\"].slice(0, 3);\nreturn [{ json: { content: items.map(i => `Title: ${i.title}\\nLink: ${i.link}\\nDescription: ${i.description}`).join(\"\\n\\n\") } }];"
+      },
+      "id": "Format_Content",
+      "name": "Format News Content",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Summarize the following news items into a short newsletter format."
+          },
+          {
+            "role": "user",
+            "content": "={{$json[\"content\"]}}"
+          }
+        ]
+      },
+      "id": "Summarize_GPT",
+      "name": "Summarize with GPT",
+      "type": "n8n-nodes-base.openai",
+      "typeVersion": 1,
+      "position": [
+        600,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://mitaks.app.n8n.cloud/webhook/send-newsletter",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "{ \"summary\": \"={{$json[\"choices\"][0][\"message\"][\"content\"]}}\" }"
+      },
+      "id": "Send_to_WF2",
+      "name": "Send to Workflow 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        800,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Format News Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format News Content": {
+      "main": [
+        [
+          {
+            "node": "Summarize with GPT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize with GPT": {
+      "main": [
+        [
+          {
+            "node": "Send to Workflow 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false
+}

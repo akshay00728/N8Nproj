@@ -1,0 +1,119 @@
+{
+  "name": "Send_Daily_Newsletter",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "send-newsletter",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        -48
+      ],
+      "id": "6286a465-620e-4528-9940-593054901274",
+      "name": "Webhook",
+      "webhookId": "c056b8bd-6087-4f13-9fd8-531433459ada"
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+        "options": {
+          "ignoreSSL": false
+        }
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        -48
+      ],
+      "id": "b2ff131c-2f3e-4bcb-b9c2-7e0871c03212",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.slice(0, 3);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -48
+      ],
+      "id": "e7c07daa-31ef-40bb-8075-a29e4e2416fc",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "sendTo": "akshaysxn1001@gmail.com",
+        "subject": "={{ $json.title }}",
+        "message": "=<h2>📰 New Blog Post Alert!</h2>\n\n<p><strong>🔹 Title:</strong> {{$json[\"title\"]}}</p>\n\n<p><strong>🔗 Link:</strong> <a href=\"{{$json[\"link\"]}}\">{{$json[\"link\"]}}</a></p>\n\n<p><strong>📝 Summary:</strong><br>\n{{$json[\"contentSnippet\"] || $json[\"content\"] || \"No summary available.\"}}</p>\n\n<p><strong>📅 Published At:</strong> {{$json[\"isoDate\"] || $json[\"pubDate\"]}}</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        528,
+        -48
+      ],
+      "id": "eec1362d-57bb-48f8-a30d-d2c960dc6ffc",
+      "name": "Send a message",
+      "webhookId": "12bcffa3-4896-4a94-b282-9bfc78b66bfb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "U0s7msRizPBGo73k",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "863704ae-68a2-4a63-9fcf-4d19d86267af",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "70074bff45391db7a637878b18d3c7041ca86cd0dd639506a96025f15598bfa3"
+  },
+  "id": "wJteGHt0XDrpO5F4",
+  "tags": []
+}
